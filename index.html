@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Mis Ventas · Galletas</title>
+<meta name="theme-color" content="#B5502D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Galletas">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF3E7;
+    --surface:#FFFFFF;
+    --surface-alt:#F5E8D6;
+    --line:#E8D8BE;
+    --ink:#3E2723;
+    --ink-soft:#8A7468;
+    --accent:#B5502D;
+    --accent-dark:#8C3A1E;
+    --accent-tint:#F1DCC9;
+    --gold:#C9922E;
+    --green:#3F7D42;
+    --green-tint:#E4EFDF;
+    --red:#B23A2E;
+    --red-tint:#F6E2DF;
+    --teal:#2F7180;
+    --teal-tint:#DEEAEC;
+    --amber:#C17817;
+    --amber-tint:#F6E8D3;
+    --shadow: 0 2px 10px rgba(62,39,35,0.08);
+    --tabbar-h: 64px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);}
+  body{
+    font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size:15px;
+    line-height:1.4;
+    overscroll-behavior-y: none;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  h1,h2,h3, .display{
+    font-family:'Fraunces', Georgia, serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  button, input, select{ font-family:inherit; font-size:inherit; color:inherit; }
+  button{ cursor:pointer; border:none; background:none; }
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+
+  /* HEADER */
+  .app-header{
+    padding:18px 18px 14px;
+    background:var(--bg);
+    position:sticky; top:0; z-index:20;
+    border-bottom:1px solid var(--line);
+  }
+  .app-header .brand{ display:flex; align-items:center; gap:10px; }
+  .app-header .brand-mark{
+    width:38px; height:38px; border-radius:11px; background:var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    box-shadow: var(--shadow);
+    flex-shrink:0;
+  }
+  .app-header h1{ font-size:19px; margin:0; }
+  .app-header .subtitle{ font-size:12.5px; color:var(--ink-soft); margin-top:1px; }
+
+  /* CONTENT */
+  .content{ flex:1; padding:16px 16px calc(var(--tabbar-h) + 100px); max-width:560px; margin:0 auto; width:100%; }
+  .screen-title{ font-size:22px; margin:4px 0 16px; }
+
+  /* CARD */
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow); margin-bottom:14px; }
+  .card + .card{ margin-top:14px; }
+
+  /* SUMMARY (week) */
+  .summary-card{ background: linear-gradient(155deg, var(--accent) 0%, var(--accent-dark) 100%); color:#fff; border-radius:18px; padding:18px; margin-bottom:18px; box-shadow: 0 6px 16px rgba(140,58,30,0.28); }
+  .summary-card .week-label{ font-size:12.5px; opacity:0.85; text-transform:uppercase; letter-spacing:0.04em; font-weight:600; }
+  .summary-card .stat-row{ display:flex; gap:10px; margin-top:12px; }
+  .summary-card .stat{ flex:1; background:rgba(255,255,255,0.14); border-radius:12px; padding:10px 10px; }
+  .summary-card .stat .num{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; display:block; }
+  .summary-card .stat .lbl{ font-size:11px; opacity:0.85; }
+
+  /* FORM ELEMENTS */
+  label.field-label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px; }
+  .field{ margin-bottom:16px; }
+  select.input, input.input{
+    width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid var(--line); background:var(--surface);
+    appearance:none; -webkit-appearance:none;
+  }
+  select.input{ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%238A7468' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; }
+  select.input:focus, input.input:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+
+  /* PRODUCT ROWS */
+  .product-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .product-row:last-child{ border-bottom:none; }
+  .product-info{ flex:1; min-width:0; }
+  .product-name{ font-weight:600; font-size:14.5px; }
+  .product-price{ font-size:12.5px; color:var(--ink-soft); }
+  .stepper{ display:flex; align-items:center; gap:0; background:var(--surface-alt); border-radius:10px; overflow:hidden; }
+  .stepper button{ width:34px; height:34px; font-size:18px; font-weight:700; color:var(--accent); display:flex; align-items:center; justify-content:center; }
+  .stepper button:active{ background:var(--accent-tint); }
+  .stepper .qty{ width:28px; text-align:center; font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; }
+  .subtotal{ width:52px; text-align:right; font-size:13px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+
+  /* TOTAL BAR */
+  .total-row{ display:flex; justify-content:space-between; align-items:baseline; padding-top:14px; margin-top:4px; border-top:2px dashed var(--line); }
+  .total-row .lbl{ font-size:13px; color:var(--ink-soft); font-weight:600;}
+  .total-row .amt{ font-family:'Fraunces', serif; font-size:26px; font-weight:600; color:var(--accent-dark); }
+
+  /* STATUS TOGGLES */
+  .status-toggles{ display:flex; gap:10px; }
+  .toggle-pill{ flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px 10px; text-align:center; }
+  .toggle-pill.on{ border-color: var(--accent); background:var(--accent-tint); }
+  .toggle-pill .ico{ font-size:18px; display:block; margin-bottom:2px; }
+  .toggle-pill .txt{ font-size:12.5px; font-weight:600; }
+  .status-preview{ margin-top:12px; text-align:center; }
+
+  /* STAMP */
+  .stamp{ display:inline-block; padding:5px 12px; border-radius:6px; border:2px solid; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; transform:rotate(-3deg); }
+  .stamp-green{ color:var(--green); border-color:var(--green); background:var(--green-tint); }
+  .stamp-red{ color:var(--red); border-color:var(--red); background:var(--red-tint); }
+  .stamp-teal{ color:var(--teal); border-color:var(--teal); background:var(--teal-tint); }
+  .stamp-amber{ color:var(--amber); border-color:var(--amber); background:var(--amber-tint); }
+
+  /* BUTTONS */
+  .btn{ display:block; width:100%; text-align:center; padding:14px; border-radius:12px; font-weight:700; font-size:15px; }
+  .btn-primary{ background:var(--accent); color:#fff; box-shadow:0 4px 10px rgba(181,80,45,0.3); }
+  .btn-primary:active{ background:var(--accent-dark); }
+  .btn-ghost{ background:var(--surface-alt); color:var(--ink); margin-top:10px; }
+  .btn-danger{ background:var(--red-tint); color:var(--red); margin-top:10px; }
+  .btn-small{ padding:9px 14px; font-size:13px; border-radius:10px; width:auto; display:inline-block; }
+
+  /* WEEK GROUP */
+  .week-group{ margin-bottom:14px; }
+  .week-header{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:13px 15px; background:var(--surface-alt); border-radius:14px; border:1px solid var(--line); }
+  .week-header .wtitle{ font-weight:700; font-size:14px; text-align:left; }
+  .week-header .wsub{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .week-header .chev{ font-size:13px; color:var(--ink-soft); transition:transform 0.15s; margin-left:8px; flex-shrink:0; }
+  .week-header.open .chev{ transform:rotate(180deg); }
+  .week-body{ padding:12px 2px 2px; }
+
+  .day-label{ font-size:12.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin:14px 0 8px 4px; }
+  .day-label:first-child{ margin-top:4px; }
+
+  /* TICKET */
+  .ticket{ position:relative; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; text-align:left; width:100%; }
+  .ticket::before, .ticket::after{ content:''; position:absolute; top:50%; width:16px; height:16px; background:var(--bg); border-radius:50%; transform:translateY(-50%); border:1px solid var(--line); }
+  .ticket::before{ left:-9px; }
+  .ticket::after{ right:-9px; }
+  .ticket-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .ticket-client{ font-weight:700; font-size:14.5px; }
+  .ticket-items{ font-size:13px; color:var(--ink-soft); margin-top:5px; padding-top:8px; border-top:1.5px dashed var(--line); }
+  .ticket-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:9px; }
+  .ticket-total{ font-family:'Fraunces', serif; font-weight:600; font-size:16px; color:var(--accent-dark); }
+
+  /* EMPTY STATE */
+  .empty{ text-align:center; padding:36px 16px; color:var(--ink-soft); }
+  .empty .ico{ font-size:34px; display:block; margin-bottom:8px; }
+
+  /* DEBT CARD */
+  .debt-card{ width:100%; text-align:left; }
+  .debt-top{ display:flex; justify-content:space-between; align-items:center; }
+  .debt-name{ font-weight:700; font-size:15px; }
+  .debt-amt{ font-family:'Fraunces', serif; font-weight:600; font-size:18px; color:var(--red); }
+  .debt-weeks{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:none; }
+  .debt-weeks.open{ display:block; }
+  .debt-week-row{ display:flex; justify-content:space-between; font-size:13px; padding:4px 0; color:var(--ink-soft); }
+  .debt-week-row b{ color:var(--ink); }
+  .grand-total{ text-align:center; padding:6px 0 18px; }
+  .grand-total .num{ font-family:'Fraunces', serif; font-size:30px; font-weight:600; color:var(--accent-dark); }
+  .grand-total .lbl{ font-size:12.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.04em; font-weight:600; }
+
+  /* CLIENTS */
+  .client-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--line); gap:10px; }
+  .client-row:last-child{ border-bottom:none; }
+  .client-info .name{ font-weight:600; font-size:14.5px; }
+  .client-info .meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .client-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .icon-btn{ width:32px; height:32px; border-radius:9px; background:var(--surface-alt); display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .add-client-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .add-client-row input{ flex:1; }
+
+  /* CLOUD SYNC */
+  .sync-status{ display:flex; align-items:center; gap:6px; font-size:13.5px; margin-bottom:10px; }
+  .sync-code-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-alt); padding:10px 12px; border-radius:10px; }
+  .sync-code{ font-family:'SFMono-Regular', Menlo, monospace; font-weight:700; letter-spacing:0.05em; font-size:13.5px; word-break:break-all; }
+  .sync-hint{ font-size:11.5px; color:var(--ink-soft); margin-top:7px; line-height:1.4; }
+
+  /* TAB BAR */
+  .tabbar{ position:fixed; bottom:0; left:0; right:0; height:var(--tabbar-h); background:var(--surface); border-top:1px solid var(--line); display:flex; z-index:30; padding-bottom:env(safe-area-inset-bottom); }
+  .tab-btn{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink-soft); }
+  .tab-btn .ico{ font-size:19px; }
+  .tab-btn .txt{ font-size:10.5px; font-weight:600; }
+  .tab-btn.active{ color:var(--accent); }
+
+  /* SAVE BAR (sticky above tabbar for nueva venta) */
+  .savebar{ position:fixed; left:0; right:0; bottom:var(--tabbar-h); background:var(--surface); border-top:1px solid var(--line); padding:10px 16px; display:flex; align-items:center; gap:14px; z-index:25; box-shadow:0 -4px 10px rgba(62,39,35,0.05); }
+  .savebar .sb-total{ flex-shrink:0; }
+  .savebar .sb-total .amt{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; color:var(--accent-dark); display:block; }
+  .savebar .sb-total .lbl{ font-size:10.5px; color:var(--ink-soft); }
+  .savebar .btn{ margin:0; }
+
+  /* TOAST */
+  .toast{ position:fixed; left:50%; bottom:calc(var(--tabbar-h) + 82px); transform:translateX(-50%); background:var(--ink); color:#fff; padding:11px 18px; border-radius:30px; font-size:13.5px; font-weight:600; z-index:50; box-shadow:0 6px 16px rgba(0,0,0,0.2); max-width:88%; text-align:center; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+
+  a{ color:var(--accent); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- DATA MODEL ---------- */
+  var PRODUCTS = [
+    { id:'arandano', name:'Galleta de Arándano', price:35, ico:'🫐' },
+    { id:'nuez',     name:'Besos de Nuez',        price:35, ico:'🌰' },
+    { id:'bigchip',  name:'Big Chip',             price:30, ico:'🍪' },
+    { id:'brownie',  name:'Brownie',              price:25, ico:'🍫' },
+    { id:'rol',      name:'Rol',                  price:45, ico:'🥐' }
+  ];
+  var STORAGE_KEY = 'galletasAppData_v1';
+  var SYNC_CODE_KEY = 'galletasSyncCode_v1';
+  var LOCAL_UPDATED_KEY = 'galletasLocalUpdatedAt_v1';
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  function loadData(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ var d = JSON.parse(raw); if(d && d.clients && d.sales) return d; }
+    }catch(e){}
+    return { clients: [], sales: [] };
+  }
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+    state.localUpdatedAt = Date.now();
+    localStorage.setItem(LOCAL_UPDATED_KEY, String(state.localUpdatedAt));
+    pushToCloud(false);
+  }
+
+  /* ---------- CLOUD SYNC (Firebase Firestore) ---------- */
+  var firebaseConfig = {
+    apiKey: "AIzaSyD4twod1MMwFDpOFhjds6V_MofosSw5SyA",
+    authDomain: "venta-de-galletas-79a01.firebaseapp.com",
+    projectId: "venta-de-galletas-79a01",
+    storageBucket: "venta-de-galletas-79a01.firebasestorage.app",
+    messagingSenderId: "851964114953",
+    appId: "1:851964114953:web:9f39fb9dab04e57a6ca0d8"
+  };
+  var db = null;
+  try{
+    if(window.firebase){
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+    }
+  }catch(e){ console.warn('No se pudo inicializar Firebase', e); }
+
+  function genSyncCode(){
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var s = '';
+    for(var i=0;i<16;i++){ s += chars[Math.floor(Math.random()*chars.length)]; }
+    return s;
+  }
+  function getSyncCode(){
+    var c = localStorage.getItem(SYNC_CODE_KEY);
+    if(!c){ c = genSyncCode(); localStorage.setItem(SYNC_CODE_KEY, c); }
+    return c;
+  }
+
+  function renderSyncBadgeIfVisible(){ if(state.tab==='clientes') render(); }
+
+  function pushToCloud(manual){
+    if(!db) return;
+    if(!navigator.onLine){
+      state.syncStatus = 'offline';
+      renderSyncBadgeIfVisible();
+      if(manual) toast('Sin conexión. Se sincronizará cuando vuelva la señal.');
+      return;
+    }
+    state.syncStatus = 'syncing';
+    renderSyncBadgeIfVisible();
+    db.collection('backups').doc(state.syncCode).set({
+      clients: state.data.clients,
+      sales: state.data.sales,
+      updatedAt: state.localUpdatedAt
+    }).then(function(){
+      state.syncStatus = 'synced';
+      if(manual) toast('Sincronizado con la nube ✓');
+      renderSyncBadgeIfVisible();
+    }).catch(function(err){
+      console.warn('push error', err);
+      state.syncStatus = 'error';
+      if(manual) toast('No se pudo sincronizar. Intenta de nuevo.');
+      renderSyncBadgeIfVisible();
+    });
+  }
+
+  function pullFromCloud(code, opts){
+    opts = opts || {};
+    if(!db){ if(opts.manual) toast('La nube no está disponible'); return; }
+    if(!navigator.onLine){
+      state.syncStatus = 'offline';
+      renderSyncBadgeIfVisible();
+      if(opts.manual) toast('Sin conexión');
+      return;
+    }
+    state.syncStatus = 'syncing';
+    renderSyncBadgeIfVisible();
+    db.collection('backups').doc(code).get().then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        var cloudTime = d.updatedAt || 0;
+        if(opts.force || cloudTime > (state.localUpdatedAt||0)){
+          state.data = { clients: d.clients||[], sales: d.sales||[] };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+          state.localUpdatedAt = cloudTime || Date.now();
+          localStorage.setItem(LOCAL_UPDATED_KEY, String(state.localUpdatedAt));
+          state.syncStatus = 'synced';
+          if(opts.manual) toast('Datos restaurados desde la nube ✓');
+          render();
+          return;
+        }
+        state.syncStatus = 'synced';
+      } else {
+        state.syncStatus = 'idle';
+        if(opts.manual) toast('No se encontró ese código en la nube');
+      }
+      renderSyncBadgeIfVisible();
+    }).catch(function(err){
+      console.warn('pull error', err);
+      state.syncStatus = 'error';
+      if(opts.manual) toast('No se pudo conectar a la nube');
+      renderSyncBadgeIfVisible();
+    });
+  }
+
+  /* ---------- DATE HELPERS ---------- */
+  var DOW = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+  function toLocalISO(d){
+    var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+  }
+  function parseISO(s){ var p=s.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); }
+  function isWeekday(s){ var dow = parseISO(s).getDay(); return dow>=1 && dow<=5; }
+  function todayISO(){ return toLocalISO(new Date()); }
+  function defaultSaleDate(){
+    var t = new Date();
+    if(isWeekday(toLocalISO(t))) return toLocalISO(t);
+    var dow = t.getDay();
+    var back = dow===0 ? 2 : 1;
+    t.setDate(t.getDate()-back);
+    return toLocalISO(t);
+  }
+  function mondayOf(s){
+    var d = parseISO(s);
+    var dow = d.getDay();
+    var diff = d.getDate() - dow + (dow===0 ? -6 : 1);
+    var m = new Date(d); m.setDate(diff);
+    return toLocalISO(m);
+  }
+  function weekKeyForDate(s){ return mondayOf(s); }
+  function fridayOf(mondayKey){ var d = parseISO(mondayKey); d.setDate(d.getDate()+4); return d; }
+  function formatDateLong(s){
+    var d = parseISO(s);
+    return DOW[d.getDay()] + ' ' + d.getDate() + ' de ' + MONTHS[d.getMonth()];
+  }
+  function weekLabel(weekKey){
+    var monday = parseISO(weekKey);
+    var friday = fridayOf(weekKey);
+    var sameMonth = monday.getMonth() === friday.getMonth();
+    var lbl = sameMonth
+      ? (monday.getDate() + ' al ' + friday.getDate() + ' de ' + MONTHS[monday.getMonth()])
+      : (monday.getDate() + ' de ' + MONTHS[monday.getMonth()] + ' al ' + friday.getDate() + ' de ' + MONTHS[friday.getMonth()]);
+    return 'Semana del ' + lbl;
+  }
+  function money(n){ return '$' + Math.round(n).toLocaleString('es-MX'); }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  /* ---------- STATE ---------- */
+  function freshForm(){
+    var qty = {};
+    PRODUCTS.forEach(function(p){ qty[p.id]=0; });
+    return {
+      editingId:null,
+      date: defaultSaleDate(),
+      client:'',
+      newClient:false,
+      newClientName:'',
+      qty: qty,
+      entregado:false,
+      pagado:false
+    };
+  }
+
+  var state = {
+    tab:'venta',
+    data: loadData(),
+    form: freshForm(),
+    openWeeks: {},
+    openDebts: {},
+    toast:null,
+    _toastTimer:null,
+    syncCode: getSyncCode(),
+    syncStatus: 'idle',
+    localUpdatedAt: Number(localStorage.getItem(LOCAL_UPDATED_KEY)||0),
+    showRestore: false,
+    restoreCodeInput: ''
+  };
+  state.openWeeks[weekKeyForDate(todayISO())] = true;
+
+  function toast(msg){
+    state.toast = msg;
+    render();
+    if(state._toastTimer) clearTimeout(state._toastTimer);
+    state._toastTimer = setTimeout(function(){ state.toast=null; renderToastOnly(); }, 2200);
+  }
+
+  /* ---------- COMPUTATIONS ---------- */
+  function saleTotal(items){ return items.reduce(function(s,i){return s+i.price*i.qty;},0); }
+
+  function statusInfo(sale){
+    if(sale.entregado && sale.pagado) return {label:'Pagado', cls:'stamp-green'};
+    if(sale.entregado && !sale.pagado) return {label:'Debe', cls:'stamp-red'};
+    if(!sale.entregado && sale.pagado) return {label:'Falta entregar', cls:'stamp-teal'};
+    return {label:'Apartado', cls:'stamp-amber'};
+  }
+
+  function groupByWeek(){
+    var weeks = {};
+    state.data.sales.forEach(function(s){
+      var wk = weekKeyForDate(s.date);
+      if(!weeks[wk]) weeks[wk]=[];
+      weeks[wk].push(s);
+    });
+    return weeks;
+  }
+
+  function currentWeekStats(){
+    var wk = weekKeyForDate(todayISO());
+    var sales = state.data.sales.filter(function(s){ return weekKeyForDate(s.date)===wk; });
+    var vendido=0, cobrado=0, pendiente=0;
+    sales.forEach(function(s){
+      vendido += s.total;
+      if(s.pagado) cobrado += s.total; else pendiente += s.total;
+    });
+    return { wk:wk, vendido:vendido, cobrado:cobrado, pendiente:pendiente };
+  }
+
+  function computeDebts(){
+    var map = {};
+    state.data.sales.forEach(function(s){
+      if(!s.pagado){
+        if(!map[s.client]) map[s.client] = { total:0, weeks:{} };
+        map[s.client].total += s.total;
+        var wk = weekKeyForDate(s.date);
+        map[s.client].weeks[wk] = (map[s.client].weeks[wk]||0) + s.total;
+      }
+    });
+    return map;
+  }
+
+  function clientStats(name){
+    var sales = state.data.sales.filter(function(s){ return s.client===name; });
+    var debt = 0;
+    sales.forEach(function(s){ if(!s.pagado) debt += s.total; });
+    return { count: sales.length, debt: debt };
+  }
+
+  /* ---------- RENDER ---------- */
+  function render(){
+    var app = document.getElementById('app');
+    var html = renderHeader() + '<main class="content">' + renderTab() + '</main>';
+    if(state.tab==='venta') html += renderSaveBar();
+    html += renderTabBar();
+    if(state.toast) html += '<div class="toast">'+esc(state.toast)+'</div>';
+    app.innerHTML = html;
+    bindHandlers();
+  }
+  function renderToastOnly(){
+    var existing = document.querySelector('.toast');
+    if(existing) existing.remove();
+  }
+
+  function renderHeader(){
+    var titles = { venta: state.form.editingId ? 'Editar venta' : 'Nueva venta', ventas:'Ventas', deudas:'Deudas', clientes:'Clientes' };
+    return '' +
+    '<header class="app-header">' +
+      '<div class="brand">' +
+        '<div class="brand-mark">🍪</div>' +
+        '<div><h1>' + esc(titles[state.tab]) + '</h1>' +
+        '<div class="subtitle">Control de ventas · galletas &amp; brownies</div></div>' +
+      '</div>' +
+    '</header>';
+  }
+
+  function renderTabBar(){
+    var tabs = [
+      {id:'venta', ico:'➕', txt:'Nueva'},
+      {id:'ventas', ico:'🧾', txt:'Ventas'},
+      {id:'deudas', ico:'💰', txt:'Deudas'},
+      {id:'clientes', ico:'👥', txt:'Clientes'}
+    ];
+    return '<nav class="tabbar">' + tabs.map(function(t){
+      return '<button class="tab-btn'+(state.tab===t.id?' active':'')+'" data-action="setTab" data-tab="'+t.id+'">'+
+        '<span class="ico">'+t.ico+'</span><span class="txt">'+t.txt+'</span></button>';
+    }).join('') + '</nav>';
+  }
+
+  function renderSaveBar(){
+    var total = 0;
+    PRODUCTS.forEach(function(p){ total += p.price * (state.form.qty[p.id]||0); });
+    return '<div class="savebar">' +
+      '<div class="sb-total"><span class="amt">'+money(total)+'</span><span class="lbl">Total</span></div>' +
+      '<button class="btn btn-primary" data-action="saveSale">'+(state.form.editingId?'Guardar cambios':'Registrar venta')+'</button>' +
+    '</div>';
+  }
+
+  function renderTab(){
+    if(state.tab==='venta') return renderVentaForm();
+    if(state.tab==='ventas') return renderVentas();
+    if(state.tab==='deudas') return renderDeudas();
+    if(state.tab==='clientes') return renderClientes();
+    return '';
+  }
+
+  function renderVentaForm(){
+    var f = state.form;
+    var clientsSorted = state.data.clients.slice().sort(function(a,b){return a.localeCompare(b,'es');});
+    var clientOptions = clientsSorted.map(function(c){
+      return '<option value="'+esc(c)+'"'+(f.client===c && !f.newClient?' selected':'')+'>'+esc(c)+'</option>';
+    }).join('');
+
+    var out = '<div class="card">';
+    out += '<div class="field"><label class="field-label">Fecha</label>' +
+      '<input class="input" type="date" data-action="dateChange" value="'+f.date+'"></div>';
+
+    out += '<div class="field"><label class="field-label">Cliente</label>';
+    out += '<select class="input" data-action="clientSelect">' +
+      '<option value="">— Elige un cliente —</option>' +
+      clientOptions +
+      '<option value="__new__"'+(f.newClient?' selected':'')+'>+ Nuevo cliente</option>' +
+    '</select>';
+    if(f.newClient){
+      out += '<input class="input" style="margin-top:8px;" type="text" placeholder="Nombre del cliente" ' +
+        'data-action="newClientNameInput" value="'+esc(f.newClientName)+'" autofocus>';
+    }
+    out += '</div></div>';
+
+    out += '<div class="card">';
+    out += '<label class="field-label" style="margin-bottom:4px;">Productos</label>';
+    PRODUCTS.forEach(function(p){
+      var q = f.qty[p.id]||0;
+      out += '<div class="product-row">' +
+        '<div class="product-info"><div class="product-name">'+p.ico+' '+p.name+'</div>' +
+        '<div class="product-price">'+money(p.price)+' c/u</div></div>' +
+        '<div class="stepper">' +
+          '<button data-action="qtyMinus" data-pid="'+p.id+'">−</button>' +
+          '<span class="qty">'+q+'</span>' +
+          '<button data-action="qtyPlus" data-pid="'+p.id+'">+</button>' +
+        '</div>' +
+        '<div class="subtotal">'+(q>0 ? money(q*p.price) : '—')+'</div>' +
+      '</div>';
+    });
+    var total = 0;
+    PRODUCTS.forEach(function(p){ total += p.price*(f.qty[p.id]||0); });
+    out += '<div class="total-row"><span class="lbl">Total</span><span class="amt">'+money(total)+'</span></div>';
+    out += '</div>';
+
+    out += '<div class="card">';
+    out += '<label class="field-label">Estado de la venta</label>';
+    out += '<div class="status-toggles">' +
+      '<button class="toggle-pill'+(f.entregado?' on':'')+'" data-action="toggleEntregado">' +
+        '<span class="ico">📦</span><span class="txt">Entregado</span></button>' +
+      '<button class="toggle-pill'+(f.pagado?' on':'')+'" data-action="togglePagado">' +
+        '<span class="ico">💵</span><span class="txt">Pagado</span></button>' +
+    '</div>';
+    var st = statusInfo({entregado:f.entregado, pagado:f.pagado});
+    out += '<div class="status-preview"><span class="stamp '+st.cls+'">'+st.label+'</span></div>';
+    out += '</div>';
+
+    if(f.editingId){
+      out += '<button class="btn btn-danger" data-action="deleteSale" data-id="'+f.editingId+'">Eliminar esta venta</button>';
+      out += '<button class="btn btn-ghost" data-action="cancelEdit">Cancelar edición</button>';
+    }
+
+    return out;
+  }
+
+  function renderVentas(){
+    var cw = currentWeekStats();
+    var out = '<div class="summary-card">' +
+      '<div class="week-label">Esta semana</div>' +
+      '<div class="stat-row">' +
+        '<div class="stat"><span class="num">'+money(cw.vendido)+'</span><span class="lbl">Vendido</span></div>' +
+        '<div class="stat"><span class="num">'+money(cw.cobrado)+'</span><span class="lbl">Cobrado</span></div>' +
+        '<div class="stat"><span class="num">'+money(cw.pendiente)+'</span><span class="lbl">Pendiente</span></div>' +
+      '</div>' +
+    '</div>';
+
+    var weeks = groupByWeek();
+    var keys = Object.keys(weeks).sort().reverse();
+
+    if(keys.length===0){
+      out += '<div class="empty"><span class="ico">🍪</span>Aún no registras ventas.<br>Usa la pestaña "Nueva" para agregar la primera.</div>';
+      return out;
+    }
+
+    keys.forEach(function(wk){
+      var sales = weeks[wk];
+      var wkTotal = 0, wkPend = 0;
+      sales.forEach(function(s){ wkTotal += s.total; if(!s.pagado) wkPend += s.total; });
+      var open = !!state.openWeeks[wk];
+
+      out += '<div class="week-group">';
+      out += '<button class="week-header'+(open?' open':'')+'" data-action="toggleWeek" data-wk="'+wk+'">' +
+        '<div><div class="wtitle">'+weekLabel(wk)+'</div>' +
+        '<div class="wsub">'+money(wkTotal)+' vendido' + (wkPend>0 ? ' · '+money(wkPend)+' pendiente' : '') + '</div></div>' +
+        '<span class="chev">▾</span>' +
+      '</button>';
+
+      if(open){
+        out += '<div class="week-body">';
+        var byDay = {};
+        sales.forEach(function(s){ if(!byDay[s.date]) byDay[s.date]=[]; byDay[s.date].push(s); });
+        var days = Object.keys(byDay).sort();
+        days.forEach(function(day){
+          out += '<div class="day-label">'+formatDateLong(day)+'</div>';
+          byDay[day].sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);}).forEach(function(s){
+            var st = statusInfo(s);
+            var itemsTxt = s.items.map(function(i){ return i.qty+'x '+i.name; }).join(', ');
+            out += '<button class="ticket" data-action="editSale" data-id="'+s.id+'">' +
+              '<div class="ticket-head"><span class="ticket-client">'+esc(s.client)+'</span>' +
+              '<span class="stamp '+st.cls+'">'+st.label+'</span></div>' +
+              '<div class="ticket-items">'+esc(itemsTxt)+'</div>' +
+              '<div class="ticket-foot"><span></span><span class="ticket-total">'+money(s.total)+'</span></div>' +
+            '</button>';
+          });
+        });
+        out += '</div>';
+      }
+      out += '</div>';
+    });
+
+    return out;
+  }
+
+  function renderDeudas(){
+    var debts = computeDebts();
+    var names = Object.keys(debts).filter(function(n){ return debts[n].total>0; })
+      .sort(function(a,b){ return debts[b].total - debts[a].total; });
+
+    var grand = 0;
+    names.forEach(function(n){ grand += debts[n].total; });
+
+    var out = '<div class="grand-total">' +
+      '<span class="num">'+money(grand)+'</span><br><span class="lbl">Total que te deben</span>' +
+    '</div>';
+
+    if(names.length===0){
+      out += '<div class="empty"><span class="ico">✅</span>¡Nadie te debe nada por ahora!</div>';
+      return out;
+    }
+
+    names.forEach(function(name){
+      var d = debts[name];
+      var open = !!state.openDebts[name];
+      var weekKeys = Object.keys(d.weeks).sort().reverse();
+      out += '<div class="card">';
+      out += '<button class="debt-card" data-action="toggleDebt" data-name="'+esc(name)+'">' +
+        '<div class="debt-top"><span class="debt-name">'+esc(name)+'</span><span class="debt-amt">'+money(d.total)+'</span></div>' +
+      '</button>';
+      out += '<div class="debt-weeks'+(open?' open':'')+'">';
+      weekKeys.forEach(function(wk){
+        out += '<div class="debt-week-row"><span>'+weekLabel(wk).replace('Semana del ','')+'</span><b>'+money(d.weeks[wk])+'</b></div>';
+      });
+      out += '</div>';
+      out += '</div>';
+    });
+
+    return out;
+  }
+
+  function renderCloudCard(){
+    var statusMap = {
+      idle:    { ico:'☁️', txt:'Aún no sincronizado' },
+      syncing: { ico:'🔄', txt:'Sincronizando…' },
+      synced:  { ico:'✅', txt:'Sincronizado con la nube' },
+      offline: { ico:'📴', txt:'Sin conexión — se sincronizará después' },
+      error:   { ico:'⚠️', txt:'No se pudo sincronizar' }
+    };
+    var st = statusMap[state.syncStatus] || statusMap.idle;
+    var out = '<div class="card">';
+    out += '<label class="field-label">Respaldo en la nube</label>';
+    out += '<div class="sync-status">'+st.ico+' <span>'+st.txt+'</span></div>';
+    out += '<div class="sync-code-row"><span class="sync-code">'+state.syncCode+'</span>' +
+      '<button class="btn btn-ghost btn-small" data-action="copySyncCode">Copiar</button></div>';
+    out += '<div class="sync-hint">Guarda este código. Si cambias de celular o reinstalas la app, úsalo para recuperar tus ventas.</div>';
+    out += '<button class="btn btn-ghost btn-small" data-action="manualSync" style="margin-top:10px;">Sincronizar ahora</button>';
+    out += '<button class="btn btn-ghost btn-small" data-action="toggleRestore" style="margin-top:8px;">'+(state.showRestore?'Cancelar':'Restaurar con otro código')+'</button>';
+    if(state.showRestore){
+      out += '<div style="margin-top:10px;">' +
+        '<input class="input" type="text" placeholder="Pega tu código aquí" data-action="restoreCodeInput" value="'+esc(state.restoreCodeInput||'')+'" style="text-transform:uppercase;">' +
+        '<button class="btn btn-primary btn-small" data-action="confirmRestore" style="margin-top:8px;">Restaurar datos</button>' +
+      '</div>';
+    }
+    out += '</div>';
+    return out;
+  }
+
+  function renderClientes(){
+    var out = renderCloudCard();
+    out += '<div class="add-client-row">' +
+      '<input class="input" type="text" id="newClienteQuick" placeholder="Nombre de nuevo cliente">' +
+      '<button class="btn btn-primary btn-small" data-action="addClientQuick">Agregar</button>' +
+    '</div>';
+
+    var clients = state.data.clients.slice().sort(function(a,b){return a.localeCompare(b,'es');});
+    if(clients.length===0){
+      out += '<div class="empty"><span class="ico">👥</span>Aún no tienes clientes guardados.</div>';
+      return out;
+    }
+
+    out += '<div class="card">';
+    clients.forEach(function(name){
+      var stats = clientStats(name);
+      out += '<div class="client-row">' +
+        '<div class="client-info"><div class="name">'+esc(name)+'</div>' +
+        '<div class="meta">'+stats.count+' venta'+(stats.count===1?'':'s')+(stats.debt>0 ? ' · debe '+money(stats.debt) : '')+'</div></div>' +
+        '<div class="client-actions">' +
+          '<button class="icon-btn" data-action="renameClient" data-name="'+esc(name)+'" title="Renombrar">✏️</button>' +
+          '<button class="icon-btn" data-action="deleteClient" data-name="'+esc(name)+'" title="Quitar">🗑️</button>' +
+        '</div>' +
+      '</div>';
+    });
+    out += '</div>';
+    return out;
+  }
+
+  /* ---------- ACTIONS ---------- */
+  function setTab(tab){ state.tab = tab; render(); window.scrollTo(0,0); }
+
+  function qtyDelta(pid, delta){
+    var cur = state.form.qty[pid]||0;
+    state.form.qty[pid] = Math.max(0, cur+delta);
+    render();
+  }
+
+  function handleDateChange(v){
+    if(!v) return;
+    if(!isWeekday(v)){
+      var d = parseISO(v);
+      while(!isWeekday(toLocalISO(d))){ d.setDate(d.getDate()-1); }
+      state.form.date = toLocalISO(d);
+      toast('Solo se registran ventas de lunes a viernes. Se ajustó al viernes anterior.');
+    } else {
+      state.form.date = v;
+      render();
+    }
+  }
+
+  function handleClientSelect(v){
+    if(v==='__new__'){ state.form.newClient = true; state.form.client=''; }
+    else { state.form.newClient=false; state.form.client=v; state.form.newClientName=''; }
+    render();
+  }
+
+  function saveSale(){
+    var f = state.form;
+    var clientName = f.newClient ? (f.newClientName||'').trim() : f.client;
+    if(!clientName){ toast('Elige o escribe el nombre del cliente'); return; }
+    if(!isWeekday(f.date)){ toast('La fecha debe ser de lunes a viernes'); return; }
+    var items = PRODUCTS.filter(function(p){ return (f.qty[p.id]||0)>0; })
+      .map(function(p){ return { id:p.id, name:p.name, price:p.price, qty:f.qty[p.id] }; });
+    if(items.length===0){ toast('Agrega al menos un producto'); return; }
+    var total = saleTotal(items);
+
+    var exists = state.data.clients.some(function(c){ return c.toLowerCase()===clientName.toLowerCase(); });
+    if(!exists) state.data.clients.push(clientName);
+
+    if(f.editingId){
+      var idx = state.data.sales.findIndex(function(s){ return s.id===f.editingId; });
+      if(idx>-1){
+        state.data.sales[idx].date = f.date;
+        state.data.sales[idx].client = clientName;
+        state.data.sales[idx].items = items;
+        state.data.sales[idx].total = total;
+        state.data.sales[idx].entregado = f.entregado;
+        state.data.sales[idx].pagado = f.pagado;
+      }
+      toast('Venta actualizada ✓');
+    } else {
+      state.data.sales.push({ id:uid(), date:f.date, client:clientName, items:items, total:total, entregado:f.entregado, pagado:f.pagado, createdAt:Date.now() });
+      toast('Venta registrada ✓');
+    }
+    saveData();
+    state.openWeeks[weekKeyForDate(f.date)] = true;
+    state.form = freshForm();
+    render();
+  }
+
+  function editSale(id){
+    var s = state.data.sales.find(function(x){ return x.id===id; });
+    if(!s) return;
+    var qty = {};
+    PRODUCTS.forEach(function(p){
+      var found = s.items.find(function(i){ return i.id===p.id; });
+      qty[p.id] = found ? found.qty : 0;
+    });
+    state.form = {
+      editingId: s.id,
+      date: s.date,
+      client: s.client,
+      newClient: false,
+      newClientName: '',
+      qty: qty,
+      entregado: s.entregado,
+      pagado: s.pagado
+    };
+    state.tab = 'venta';
+    render();
+    window.scrollTo(0,0);
+  }
+
+  function deleteSale(id){
+    if(!confirm('¿Eliminar esta venta? Esta acción no se puede deshacer.')) return;
+    state.data.sales = state.data.sales.filter(function(s){ return s.id!==id; });
+    saveData();
+    state.form = freshForm();
+    toast('Venta eliminada');
+    render();
+  }
+
+  function addClientQuick(){
+    var input = document.getElementById('newClienteQuick');
+    var name = (input && input.value || '').trim();
+    if(!name){ toast('Escribe un nombre'); return; }
+    var exists = state.data.clients.some(function(c){ return c.toLowerCase()===name.toLowerCase(); });
+    if(exists){ toast('Ese cliente ya existe'); return; }
+    state.data.clients.push(name);
+    saveData();
+    toast('Cliente agregado ✓');
+    render();
+  }
+
+  function renameClient(oldName){
+    var next = prompt('Nuevo nombre para "'+oldName+'":', oldName);
+    if(!next) return;
+    next = next.trim();
+    if(!next || next===oldName) return;
+    state.data.clients = state.data.clients.map(function(c){ return c===oldName ? next : c; });
+    state.data.sales.forEach(function(s){ if(s.client===oldName) s.client = next; });
+    saveData();
+    toast('Cliente actualizado ✓');
+    render();
+  }
+
+  function deleteClient(name){
+    if(!confirm('¿Quitar a "'+name+'" de la lista de clientes? Sus ventas registradas no se borrarán.')) return;
+    state.data.clients = state.data.clients.filter(function(c){ return c!==name; });
+    saveData();
+    render();
+  }
+
+  /* ---------- EVENT BINDING ---------- */
+  function bindHandlers(){
+    var app = document.getElementById('app');
+
+    app.querySelectorAll('[data-action]').forEach(function(el){
+      var action = el.getAttribute('data-action');
+      if(el.tagName==='BUTTON'){
+        el.addEventListener('click', function(){ handleAction(action, el); });
+      } else if(el.tagName==='SELECT'){
+        el.addEventListener('change', function(){ handleAction(action, el); });
+      } else if(el.tagName==='INPUT'){
+        if(action==='dateChange'){
+          el.addEventListener('change', function(){ handleDateChange(el.value); });
+        } else if(action==='newClientNameInput'){
+          el.addEventListener('input', function(){ state.form.newClientName = el.value; });
+        } else if(action==='restoreCodeInput'){
+          el.addEventListener('input', function(){ state.restoreCodeInput = el.value; });
+        }
+      }
+    });
+  }
+
+  function handleAction(action, el){
+    switch(action){
+      case 'setTab': setTab(el.getAttribute('data-tab')); break;
+      case 'qtyMinus': qtyDelta(el.getAttribute('data-pid'), -1); break;
+      case 'qtyPlus': qtyDelta(el.getAttribute('data-pid'), 1); break;
+      case 'clientSelect': handleClientSelect(el.value); break;
+      case 'toggleEntregado': state.form.entregado = !state.form.entregado; render(); break;
+      case 'togglePagado': state.form.pagado = !state.form.pagado; render(); break;
+      case 'saveSale': saveSale(); break;
+      case 'deleteSale': deleteSale(el.getAttribute('data-id')); break;
+      case 'cancelEdit': state.form = freshForm(); render(); break;
+      case 'toggleWeek':
+        var wk = el.getAttribute('data-wk');
+        state.openWeeks[wk] = !state.openWeeks[wk];
+        render();
+        break;
+      case 'editSale': editSale(el.getAttribute('data-id')); break;
+      case 'toggleDebt':
+        var nm = el.getAttribute('data-name');
+        state.openDebts[nm] = !state.openDebts[nm];
+        render();
+        break;
+      case 'addClientQuick': addClientQuick(); break;
+      case 'renameClient': renameClient(el.getAttribute('data-name')); break;
+      case 'deleteClient': deleteClient(el.getAttribute('data-name')); break;
+      case 'copySyncCode':
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(state.syncCode).then(function(){ toast('Código copiado ✓'); })
+            .catch(function(){ prompt('Copia tu código:', state.syncCode); });
+        } else {
+          prompt('Copia tu código:', state.syncCode);
+        }
+        break;
+      case 'manualSync': pushToCloud(true); break;
+      case 'toggleRestore': state.showRestore = !state.showRestore; render(); break;
+      case 'confirmRestore':
+        var code = (state.restoreCodeInput||'').trim().toUpperCase();
+        if(!code){ toast('Escribe un código'); break; }
+        if(!confirm('Esto reemplazará los datos guardados en este celular con los del código ingresado. ¿Continuar?')) break;
+        state.syncCode = code;
+        localStorage.setItem(SYNC_CODE_KEY, code);
+        state.showRestore = false;
+        pullFromCloud(code, {force:true, manual:true});
+        break;
+    }
+  }
+
+  /* ---------- INIT ---------- */
+  render();
+
+  // Al abrir: si hay internet, revisa si la nube tiene una versión más reciente
+  // (por ejemplo si perdiste los datos locales o sincronizaste desde otro celular).
+  if(navigator.onLine){ pullFromCloud(state.syncCode); }
+  window.addEventListener('online', function(){ pushToCloud(false); });
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>

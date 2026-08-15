@@ -1,4 +1,4 @@
-const CACHE_NAME = 'galletas-app-v3';
+const CACHE_NAME = 'galletas-app-v5';
 const CORE_ASSETS = [
   './index.html',
   './manifest.json',

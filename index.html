@@ -446,27 +446,6 @@
     });
   }
 
-  /* ---------- IMPORT (datos de la semana del 3 de agosto, precargados) ---------- */
-  var PREFILL_IMPORT = [
-    { date:'2026-08-03', client:'Lupita', items:[{product:'arandano',qty:3,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Susan', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Carmen', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Candy', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Lore', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Miriam', items:[{product:'bigchip',qty:4,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Victor', items:[{product:'bigchip',qty:1,entregado:true,pagado:true},{product:'arandano',qty:1,entregado:true,pagado:false}] },
-    { date:'2026-08-03', client:'Dalia', items:[{product:'bigchip',qty:1,entregado:true,pagado:true},{product:'brownie',qty:1,entregado:true,pagado:true},{product:'brownie',qty:1,entregado:true,pagado:false}] },
-    { date:'2026-08-03', client:'Joel', items:[{product:'brownie',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Jp Jasso', items:[{product:'brownie',qty:2,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Oscar', items:[{product:'arandano',qty:3,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Gio', items:[{product:'brownie',qty:2,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Pao', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Gabriel', items:[{product:'arandano',qty:1,entregado:true,pagado:false}] },
-    { date:'2026-08-03', client:'Alex', items:[{product:'arandano',qty:1,entregado:true,pagado:true}] },
-    { date:'2026-08-03', client:'Lety', items:[{product:'arandano',qty:1,entregado:true,pagado:false}] },
-    { date:'2026-08-03', client:'Otro', items:[{product:'brownie',qty:2,entregado:true,pagado:false},{product:'bigchip',qty:2,entregado:true,pagado:false}] }
-  ];
-
   /* ---------- STATE ---------- */
   function freshForm(){
     return {
@@ -499,7 +478,7 @@
     showRestore: false,
     restoreCodeInput: '',
     showImport: false,
-    importText: JSON.stringify(PREFILL_IMPORT, null, 2)
+    importText: ''
   };
 
   function toast(msg){

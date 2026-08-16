@@ -485,6 +485,7 @@
     openDebts: {},
     ventasView: 'client',
     invWeek: targetWeekKey(),
+    invOpen: false,
     toast:null,
     _toastTimer:null,
     syncCode: getSyncCode(),
@@ -731,26 +732,36 @@
     var wk = state.invWeek;
     var inv = state.data.inventory[wk] || {};
     var sold = computeSoldByProduct(wk);
-    var out = '<div class="card">';
-    out += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
-      '<button class="mini-btn" data-action="invPrevWeek">◀</button>' +
-      '<div style="text-align:center;flex:1;"><label class="field-label" style="margin:0;">Inventario de la semana</label>' +
-      '<div style="font-weight:700;font-size:13.5px;margin-top:2px;">'+weekLabel(wk)+'</div></div>' +
-      '<button class="mini-btn" data-action="invNextWeek">▶</button>' +
-    '</div>';
-    PRODUCTS.forEach(function(p){
-      var recibido = inv[p.id]||0;
-      var vendido = sold[p.id]||0;
-      var disponible = recibido - vendido;
-      var color = recibido===0 ? 'var(--ink-soft)' : (disponible>0 ? 'var(--green)' : 'var(--red)');
-      out += '<div class="product-row">' +
-        '<div class="product-info"><div class="product-name">'+p.ico+' '+p.name+'</div>' +
-        '<div class="product-price">Vendido: '+vendido+' · Disponible: <b style="color:'+color+';">'+disponible+'</b></div></div>' +
-        '<input class="input" type="number" min="0" inputmode="numeric" style="width:64px;text-align:center;padding:8px 4px;flex-shrink:0;" ' +
-          'data-action="invInput" data-pid="'+p.id+'" value="'+recibido+'">' +
+    var open = !!state.invOpen;
+
+    var out = '<div class="week-group">';
+    out += '<button class="week-header'+(open?' open':'')+'" data-action="toggleInventory">' +
+      '<div><div class="wtitle">📦 Inventario de la semana</div>' +
+      '<div class="wsub">'+weekLabel(wk)+'</div></div>' +
+      '<span class="chev">▾</span>' +
+    '</button>';
+
+    if(open){
+      out += '<div class="week-body">';
+      out += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">' +
+        '<button class="mini-btn" data-action="invPrevWeek">◀</button>' +
+        '<div style="text-align:center;flex:1;font-weight:700;font-size:13px;color:var(--ink-soft);">'+weekLabel(wk)+'</div>' +
+        '<button class="mini-btn" data-action="invNextWeek">▶</button>' +
       '</div>';
-    });
-    out += '<div class="sync-hint" style="margin-top:8px;">Escribe cuánto te dio tu novia de cada producto. Si te trae más entre semana, solo actualiza el número.</div>';
+      PRODUCTS.forEach(function(p){
+        var recibido = inv[p.id]||0;
+        var vendido = sold[p.id]||0;
+        var disponible = recibido - vendido;
+        var color = recibido===0 ? 'var(--ink-soft)' : (disponible>0 ? 'var(--green)' : 'var(--red)');
+        out += '<div class="product-row">' +
+          '<div class="product-info"><div class="product-name">'+p.ico+' '+p.name+'</div>' +
+          '<div class="product-price">Vendido: '+vendido+' · Disponible: <b style="color:'+color+';">'+disponible+'</b></div></div>' +
+          '<input class="input" type="number" min="0" inputmode="numeric" style="width:64px;text-align:center;padding:8px 4px;flex-shrink:0;" ' +
+            'data-action="invInput" data-pid="'+p.id+'" value="'+recibido+'">' +
+        '</div>';
+      });
+      out += '</div>';
+    }
     out += '</div>';
     return out;
   }
@@ -1214,6 +1225,7 @@
       case 'setVentasView': state.ventasView = el.getAttribute('data-view'); render(); break;
       case 'invPrevWeek': state.invWeek = shiftWeek(state.invWeek, -1); render(); break;
       case 'invNextWeek': state.invWeek = shiftWeek(state.invWeek, 1); render(); break;
+      case 'toggleInventory': state.invOpen = !state.invOpen; render(); break;
       case 'toggleWeek':
         var wk = el.getAttribute('data-wk');
         state.openWeeks[wk] = !state.openWeeks[wk];

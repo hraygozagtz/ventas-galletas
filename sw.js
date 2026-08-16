@@ -1,4 +1,4 @@
-const CACHE_NAME = 'galletas-app-v8';
+const CACHE_NAME = 'galletas-app-v9';
 const CORE_ASSETS = [
   './index.html',
   './manifest.json',
@@ -24,17 +24,37 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Cache-first for app shell; cache-then-network for everything else (fonts, etc.)
 self.addEventListener('fetch', (event) => {
   const req = event.request;
+  const acceptsHTML = (req.headers.get('accept') || '').includes('text/html');
+  const isHTML = req.mode === 'navigate' || acceptsHTML;
 
+  if (isHTML) {
+    // Network-first for the app shell: always try to get the latest index.html
+    // when there's internet, so updates apply the moment you reopen the app.
+    // Falls back to the cached copy only when offline.
+    event.respondWith(
+      fetch(req)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Cache-first for everything else (icons, manifest, CDN libraries) — these
+  // rarely change, so it's fine (and faster/offline-safe) to serve from cache.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
 
       return fetch(req)
         .then((response) => {
-          // Only cache successful, basic/cors responses
           if (response && response.status === 200) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
@@ -42,7 +62,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Offline and not cached: for navigation requests, fall back to index.html
           if (req.mode === 'navigate') {
             return caches.match('./index.html');
           }

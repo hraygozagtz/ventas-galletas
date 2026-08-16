@@ -289,11 +289,12 @@
         var d = JSON.parse(raw);
         if(d && d.clients && d.sales){
           d.sales = d.sales.map(migrateSale);
+          if(!d.inventory) d.inventory = {};
           return d;
         }
       }
     }catch(e){}
-    return { clients: [], sales: [] };
+    return { clients: [], sales: [], inventory: {} };
   }
   function saveData(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
@@ -346,6 +347,7 @@
     db.collection('backups').doc(state.syncCode).set({
       clients: state.data.clients,
       sales: state.data.sales,
+      inventory: state.data.inventory,
       updatedAt: state.localUpdatedAt
     }).then(function(){
       state.syncStatus = 'synced';
@@ -375,7 +377,7 @@
         var d = doc.data();
         var cloudTime = d.updatedAt || 0;
         if(opts.force || cloudTime > (state.localUpdatedAt||0)){
-          state.data = { clients: d.clients||[], sales: (d.sales||[]).map(migrateSale) };
+          state.data = { clients: d.clients||[], sales: (d.sales||[]).map(migrateSale), inventory: d.inventory||{} };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
           state.localUpdatedAt = cloudTime || Date.now();
           localStorage.setItem(LOCAL_UPDATED_KEY, String(state.localUpdatedAt));
@@ -425,6 +427,18 @@
     return toLocalISO(m);
   }
   function weekKeyForDate(s){ return mondayOf(s); }
+  function shiftWeek(wk, delta){
+    var d = parseISO(wk);
+    d.setDate(d.getDate() + delta*7);
+    return toLocalISO(d);
+  }
+  function targetWeekKey(){
+    var t = new Date();
+    var dow = t.getDay();
+    if(dow===0) t.setDate(t.getDate()+1);
+    else if(dow===6) t.setDate(t.getDate()+2);
+    return weekKeyForDate(toLocalISO(t));
+  }
   function fridayOf(mondayKey){ var d = parseISO(mondayKey); d.setDate(d.getDate()+4); return d; }
   function formatDateLong(s){
     var d = parseISO(s);
@@ -470,6 +484,7 @@
     openWeeks: {},
     openDebts: {},
     ventasView: 'client',
+    invWeek: targetWeekKey(),
     toast:null,
     _toastTimer:null,
     syncCode: getSyncCode(),
@@ -560,6 +575,18 @@
     return { count: sales.length, debt: debt, spent: spent };
   }
 
+  function computeSoldByProduct(wk, excludeSaleId){
+    var map = {};
+    state.data.sales.forEach(function(s){
+      if(excludeSaleId && s.id===excludeSaleId) return;
+      if(weekKeyForDate(s.date)!==wk) return;
+      s.items.forEach(function(it){
+        map[it.productId] = (map[it.productId]||0) + it.qty;
+      });
+    });
+    return map;
+  }
+
   /* ---------- RENDER ---------- */
   function render(){
     var app = document.getElementById('app');
@@ -642,8 +669,15 @@
     out += '<div class="card">';
     out += '<label class="field-label" style="margin-bottom:10px;">Agregar producto</label>';
     out += '<div class="draft-row">';
+    var invWk = weekKeyForDate(f.date);
+    var invForWk = state.data.inventory[invWk] || {};
+    var soldForWk = computeSoldByProduct(invWk, f.editingId);
     out += '<select class="input" data-action="draftProductSelect">' + PRODUCTS.map(function(p){
-      return '<option value="'+p.id+'"'+(f.draftProduct===p.id?' selected':'')+'>'+p.ico+' '+p.name+' · '+money(p.price)+'</option>';
+      var recibido = invForWk[p.id]||0;
+      var inCart = f.items.filter(function(it){ return it.productId===p.id; }).reduce(function(s,it){ return s+it.qty; }, 0);
+      var disponible = recibido - (soldForWk[p.id]||0) - inCart;
+      var dispTxt = recibido===0 ? '—' : String(disponible);
+      return '<option value="'+p.id+'"'+(f.draftProduct===p.id?' selected':'')+'>'+p.ico+' '+p.name+' · '+money(p.price)+' · Disp: '+dispTxt+'</option>';
     }).join('') + '</select>';
     out += '</div>';
     out += '<div class="draft-row">';
@@ -693,9 +727,38 @@
     return out;
   }
 
+  function renderInventoryCard(){
+    var wk = state.invWeek;
+    var inv = state.data.inventory[wk] || {};
+    var sold = computeSoldByProduct(wk);
+    var out = '<div class="card">';
+    out += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">' +
+      '<button class="mini-btn" data-action="invPrevWeek">◀</button>' +
+      '<div style="text-align:center;flex:1;"><label class="field-label" style="margin:0;">Inventario de la semana</label>' +
+      '<div style="font-weight:700;font-size:13.5px;margin-top:2px;">'+weekLabel(wk)+'</div></div>' +
+      '<button class="mini-btn" data-action="invNextWeek">▶</button>' +
+    '</div>';
+    PRODUCTS.forEach(function(p){
+      var recibido = inv[p.id]||0;
+      var vendido = sold[p.id]||0;
+      var disponible = recibido - vendido;
+      var color = recibido===0 ? 'var(--ink-soft)' : (disponible>0 ? 'var(--green)' : 'var(--red)');
+      out += '<div class="product-row">' +
+        '<div class="product-info"><div class="product-name">'+p.ico+' '+p.name+'</div>' +
+        '<div class="product-price">Vendido: '+vendido+' · Disponible: <b style="color:'+color+';">'+disponible+'</b></div></div>' +
+        '<input class="input" type="number" min="0" inputmode="numeric" style="width:64px;text-align:center;padding:8px 4px;flex-shrink:0;" ' +
+          'data-action="invInput" data-pid="'+p.id+'" value="'+recibido+'">' +
+      '</div>';
+    });
+    out += '<div class="sync-hint" style="margin-top:8px;">Escribe cuánto te dio tu novia de cada producto. Si te trae más entre semana, solo actualiza el número.</div>';
+    out += '</div>';
+    return out;
+  }
+
   function renderVentas(){
     var cw = currentWeekStats();
-    var out = '<div class="summary-card">' +
+    var out = renderInventoryCard();
+    out += '<div class="summary-card">' +
       '<div class="week-label">Esta semana</div>' +
       '<div class="stat-row">' +
         '<div class="stat"><span class="num">'+money(cw.vendido)+'</span><span class="lbl">Vendido</span></div>' +
@@ -1114,6 +1177,15 @@
           el.addEventListener('input', function(){ state.form.newClientName = el.value; });
         } else if(action==='restoreCodeInput'){
           el.addEventListener('input', function(){ state.restoreCodeInput = el.value; });
+        } else if(action==='invInput'){
+          el.addEventListener('change', function(){
+            var pid = el.getAttribute('data-pid');
+            var val = Math.max(0, parseInt(el.value,10)||0);
+            if(!state.data.inventory[state.invWeek]) state.data.inventory[state.invWeek] = {};
+            state.data.inventory[state.invWeek][pid] = val;
+            saveData();
+            render();
+          });
         }
       } else if(el.tagName==='TEXTAREA'){
         if(action==='importTextarea'){
@@ -1140,6 +1212,8 @@
       case 'cancelEdit': state.form = freshForm(); render(); break;
       case 'editSale': editSale(el.getAttribute('data-id')); break;
       case 'setVentasView': state.ventasView = el.getAttribute('data-view'); render(); break;
+      case 'invPrevWeek': state.invWeek = shiftWeek(state.invWeek, -1); render(); break;
+      case 'invNextWeek': state.invWeek = shiftWeek(state.invWeek, 1); render(); break;
       case 'toggleWeek':
         var wk = el.getAttribute('data-wk');
         state.openWeeks[wk] = !state.openWeeks[wk];

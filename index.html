@@ -39,7 +39,7 @@
     --tabbar-h: 64px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink);}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink); overflow-x:hidden;}
   body{
     font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size:15px;
@@ -234,7 +234,12 @@
   /* TOAST */
   .toast{ position:fixed; left:50%; bottom:calc(var(--tabbar-h) + 82px); transform:translateX(-50%); background:var(--ink); color:#fff; padding:11px 18px; border-radius:30px; font-size:13.5px; font-weight:600; z-index:50; box-shadow:0 6px 16px rgba(0,0,0,0.2); max-width:88%; text-align:center; }
 
-  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+  @keyframes tabSlideInRight{ from{ opacity:0; transform:translateX(28px); } to{ opacity:1; transform:translateX(0); } }
+  @keyframes tabSlideInLeft{ from{ opacity:0; transform:translateX(-28px); } to{ opacity:1; transform:translateX(0); } }
+  .tab-enter-right{ animation:tabSlideInRight 0.22s ease-out; }
+  .tab-enter-left{ animation:tabSlideInLeft 0.22s ease-out; }
 
   a{ color:var(--accent); }
 </style>
@@ -478,6 +483,7 @@
 
   var state = {
     tab:'venta',
+    tabDirection: null,
     data: loadData(),
     form: freshForm(),
     openClients: {},
@@ -591,7 +597,11 @@
   /* ---------- RENDER ---------- */
   function render(){
     var app = document.getElementById('app');
-    var html = renderHeader() + '<main class="content">' + renderTab() + '</main>';
+    var animClass = '';
+    if(state.tabDirection === 'right') animClass = ' tab-enter-right';
+    else if(state.tabDirection === 'left') animClass = ' tab-enter-left';
+    state.tabDirection = null; // se consume: solo la anima el cambio de pestaña, no cada re-render dentro de la misma pestaña
+    var html = renderHeader() + '<main class="content'+animClass+'">' + renderTab() + '</main>';
     if(state.tab==='venta') html += renderSaveBar();
     html += renderTabBar();
     if(state.toast) html += '<div class="toast">'+esc(state.toast)+'</div>';
@@ -995,7 +1005,14 @@
   }
 
   /* ---------- ACTIONS ---------- */
-  function setTab(tab){ state.tab = tab; render(); window.scrollTo(0,0); }
+  function setTab(tab){
+    var oldIdx = TAB_ORDER.indexOf(state.tab);
+    var newIdx = TAB_ORDER.indexOf(tab);
+    state.tabDirection = newIdx > oldIdx ? 'right' : (newIdx < oldIdx ? 'left' : null);
+    state.tab = tab;
+    render();
+    window.scrollTo(0,0);
+  }
 
   function draftQtyDelta(delta){
     state.form.draftQty = Math.max(1, (state.form.draftQty||1)+delta);

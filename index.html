@@ -594,6 +594,30 @@
     return map;
   }
 
+  // Recibido acumulado de TODAS las semanas (el producto físico se junta, no queda separado por semana).
+  function computeTotalReceived(){
+    var map = {};
+    Object.keys(state.data.inventory).forEach(function(wk){
+      var invWk = state.data.inventory[wk] || {};
+      Object.keys(invWk).forEach(function(pid){
+        map[pid] = (map[pid]||0) + (invWk[pid]||0);
+      });
+    });
+    return map;
+  }
+
+  // Vendido acumulado de TODAS las ventas (para restar contra el recibido acumulado).
+  function computeTotalSold(excludeSaleId){
+    var map = {};
+    state.data.sales.forEach(function(s){
+      if(excludeSaleId && s.id===excludeSaleId) return;
+      s.items.forEach(function(it){
+        map[it.productId] = (map[it.productId]||0) + it.qty;
+      });
+    });
+    return map;
+  }
+
   /* ---------- RENDER ---------- */
   function render(){
     var app = document.getElementById('app');
@@ -680,14 +704,13 @@
     out += '<div class="card">';
     out += '<label class="field-label" style="margin-bottom:10px;">Agregar producto</label>';
     out += '<div class="draft-row">';
-    var invWk = weekKeyForDate(f.date);
-    var invForWk = state.data.inventory[invWk] || {};
-    var soldForWk = computeSoldByProduct(invWk, f.editingId);
+    var totalReceivedAll = computeTotalReceived();
+    var totalSoldAll = computeTotalSold(f.editingId);
     out += '<select class="input" data-action="draftProductSelect">' + PRODUCTS.map(function(p){
-      var recibido = invForWk[p.id]||0;
+      var recibidoTotal = totalReceivedAll[p.id]||0;
       var inCart = f.items.filter(function(it){ return it.productId===p.id; }).reduce(function(s,it){ return s+it.qty; }, 0);
-      var disponible = recibido - (soldForWk[p.id]||0) - inCart;
-      var dispTxt = recibido===0 ? '—' : String(disponible);
+      var disponible = recibidoTotal - (totalSoldAll[p.id]||0) - inCart;
+      var dispTxt = recibidoTotal===0 ? '—' : String(disponible);
       return '<option value="'+p.id+'"'+(f.draftProduct===p.id?' selected':'')+'>'+p.ico+' '+p.name+' · '+money(p.price)+' · Disp: '+dispTxt+'</option>';
     }).join('') + '</select>';
     out += '</div>';
@@ -741,7 +764,9 @@
   function renderInventoryCard(){
     var wk = state.invWeek;
     var inv = state.data.inventory[wk] || {};
-    var sold = computeSoldByProduct(wk);
+    var soldThisWeek = computeSoldByProduct(wk);
+    var totalReceived = computeTotalReceived();
+    var totalSold = computeTotalSold();
     var open = !!state.invOpen;
 
     var out = '<div class="week-group">';
@@ -759,15 +784,15 @@
         '<button class="mini-btn" data-action="invNextWeek">▶</button>' +
       '</div>';
       PRODUCTS.forEach(function(p){
-        var recibido = inv[p.id]||0;
-        var vendido = sold[p.id]||0;
-        var disponible = recibido - vendido;
-        var color = recibido===0 ? 'var(--ink-soft)' : (disponible>0 ? 'var(--green)' : 'var(--red)');
+        var recibidoSemana = inv[p.id]||0;
+        var vendidoSemana = soldThisWeek[p.id]||0;
+        var dispTotal = (totalReceived[p.id]||0) - (totalSold[p.id]||0);
+        var color = (totalReceived[p.id]||0)===0 ? 'var(--ink-soft)' : (dispTotal>0 ? 'var(--green)' : 'var(--red)');
         out += '<div class="product-row">' +
           '<div class="product-info"><div class="product-name">'+p.ico+' '+p.name+'</div>' +
-          '<div class="product-price">Vendido: '+vendido+' · Disponible: <b style="color:'+color+';">'+disponible+'</b></div></div>' +
+          '<div class="product-price">Vendido esta semana: '+vendidoSemana+' · Disponible total: <b style="color:'+color+';">'+dispTotal+'</b></div></div>' +
           '<input class="input" type="number" min="0" inputmode="numeric" style="width:64px;text-align:center;padding:8px 4px;flex-shrink:0;" ' +
-            'data-action="invInput" data-pid="'+p.id+'" value="'+recibido+'">' +
+            'data-action="invInput" data-pid="'+p.id+'" value="'+recibidoSemana+'">' +
         '</div>';
       });
       out += '</div>';

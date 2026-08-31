@@ -800,17 +800,17 @@
       var grandValue = 0;
       var lines = '';
       PRODUCTS.forEach(function(p){
-        var disp = Math.max(0, (totalReceived[p.id]||0) - (totalSold[p.id]||0));
-        if(disp<=0) return;
-        var val = disp*p.price;
+        var recibidoSemana = inv[p.id]||0;
+        if(recibidoSemana<=0) return;
+        var val = recibidoSemana*p.price;
         grandValue += val;
         lines += '<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;color:var(--ink-soft);">' +
           '<span>'+p.ico+' '+p.name+'</span>' +
-          '<span>'+disp+' × '+money(p.price)+' = <b style="color:var(--ink);">'+money(val)+'</b></span>' +
+          '<span>'+recibidoSemana+' × '+money(p.price)+' = <b style="color:var(--ink);">'+money(val)+'</b></span>' +
         '</div>';
       });
       out += '<div style="border-top:2px dashed var(--line); margin-top:6px; padding-top:12px;">';
-      out += '<div class="field-label" style="margin-bottom:8px;">Valor del inventario disponible</div>';
+      out += '<div class="field-label" style="margin-bottom:8px;">Valor del inventario de esta semana</div>';
       out += lines;
       out += '<div class="total-row"><span class="lbl">Total</span><span class="amt">'+money(grandValue)+'</span></div>';
       out += '</div>';
@@ -922,9 +922,12 @@
         var byDay = {};
         sales.forEach(function(s){ if(!byDay[s.date]) byDay[s.date]=[]; byDay[s.date].push(s); });
         var days = Object.keys(byDay).sort();
+        if(state.weekOrder !== 'oldest') days.reverse();
         days.forEach(function(day){
           out += '<div class="day-label">'+formatDateLong(day)+'</div>';
-          byDay[day].sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);}).forEach(function(s){
+          var daySales = byDay[day].sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+          if(state.weekOrder !== 'oldest') daySales.reverse();
+          daySales.forEach(function(s){
             var itemsHtml = s.items.map(function(it){
               var st = statusInfo(it);
               return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;">' +

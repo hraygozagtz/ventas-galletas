@@ -561,9 +561,14 @@
       s.items.forEach(function(it){
         if(!it.pagado){
           var sub = it.price*it.qty;
-          if(!map[s.client]) map[s.client] = { total:0, weeks:{} };
+          if(!map[s.client]) map[s.client] = { total:0, weeks:{}, products:{} };
           map[s.client].total += sub;
           map[s.client].weeks[wk] = (map[s.client].weeks[wk]||0) + sub;
+          if(!map[s.client].products[it.productId]){
+            map[s.client].products[it.productId] = { qty:0, amount:0, name:it.name };
+          }
+          map[s.client].products[it.productId].qty += it.qty;
+          map[s.client].products[it.productId].amount += sub;
         }
       });
     });
@@ -970,11 +975,21 @@
       var d = debts[name];
       var open = !!state.openDebts[name];
       var weekKeys = Object.keys(d.weeks).sort().reverse();
+      var productIds = Object.keys(d.products);
       out += '<div class="card">';
       out += '<button class="debt-card" data-action="toggleDebt" data-name="'+esc(name)+'">' +
         '<div class="debt-top"><span class="debt-name">'+esc(name)+'</span><span class="debt-amt">'+money(d.total)+'</span></div>' +
       '</button>';
       out += '<div class="debt-weeks'+(open?' open':'')+'">';
+      out += '<div class="field-label" style="margin-bottom:6px;">Qué te debe</div>';
+      productIds.forEach(function(pid){
+        var pd = d.products[pid];
+        var prod = PRODUCTS.find(function(x){ return x.id===pid; });
+        var ico = prod ? prod.ico+' ' : '';
+        out += '<div class="debt-week-row"><span>'+ico+esc(pd.name)+' × '+pd.qty+'</span><b>'+money(pd.amount)+'</b></div>';
+      });
+      out += '<div style="border-top:1px dashed var(--line); margin:10px 0 8px;"></div>';
+      out += '<div class="field-label" style="margin-bottom:6px;">Por semana</div>';
       weekKeys.forEach(function(wk){
         out += '<div class="debt-week-row"><span>'+weekLabel(wk).replace('Semana del ','')+'</span><b>'+money(d.weeks[wk])+'</b></div>';
       });

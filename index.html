@@ -490,6 +490,7 @@
     openWeeks: {},
     openDebts: {},
     ventasView: 'client',
+    weekOrder: 'recent',
     invWeek: targetWeekKey(),
     invOpen: false,
     toast:null,
@@ -795,6 +796,25 @@
             'data-action="invInput" data-pid="'+p.id+'" value="'+recibidoSemana+'">' +
         '</div>';
       });
+
+      var grandValue = 0;
+      var lines = '';
+      PRODUCTS.forEach(function(p){
+        var disp = Math.max(0, (totalReceived[p.id]||0) - (totalSold[p.id]||0));
+        if(disp<=0) return;
+        var val = disp*p.price;
+        grandValue += val;
+        lines += '<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;color:var(--ink-soft);">' +
+          '<span>'+p.ico+' '+p.name+'</span>' +
+          '<span>'+disp+' × '+money(p.price)+' = <b style="color:var(--ink);">'+money(val)+'</b></span>' +
+        '</div>';
+      });
+      out += '<div style="border-top:2px dashed var(--line); margin-top:6px; padding-top:12px;">';
+      out += '<div class="field-label" style="margin-bottom:8px;">Valor del inventario disponible</div>';
+      out += lines;
+      out += '<div class="total-row"><span class="lbl">Total</span><span class="amt">'+money(grandValue)+'</span></div>';
+      out += '</div>';
+
       out += '</div>';
     }
     out += '</div>';
@@ -874,9 +894,13 @@
   }
 
   function renderVentasByWeek(){
-    var out = '';
+    var out = '<div class="segment" style="margin-bottom:12px;">' +
+      '<button class="'+(state.weekOrder!=='oldest'?'active':'')+'" data-action="setWeekOrder" data-order="recent">Más recientes</button>' +
+      '<button class="'+(state.weekOrder==='oldest'?'active':'')+'" data-action="setWeekOrder" data-order="oldest">Más antiguas</button>' +
+    '</div>';
     var weeks = groupByWeek();
-    var keys = Object.keys(weeks).sort().reverse();
+    var keys = Object.keys(weeks).sort();
+    if(state.weekOrder !== 'oldest') keys.reverse();
 
     keys.forEach(function(wk){
       var sales = weeks[wk];
@@ -1265,6 +1289,7 @@
       case 'cancelEdit': state.form = freshForm(); render(); break;
       case 'editSale': editSale(el.getAttribute('data-id')); break;
       case 'setVentasView': state.ventasView = el.getAttribute('data-view'); render(); break;
+      case 'setWeekOrder': state.weekOrder = el.getAttribute('data-order'); render(); break;
       case 'invPrevWeek': state.invWeek = shiftWeek(state.invWeek, -1); render(); break;
       case 'invNextWeek': state.invWeek = shiftWeek(state.invWeek, 1); render(); break;
       case 'toggleInventory': state.invOpen = !state.invOpen; render(); break;

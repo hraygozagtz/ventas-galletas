@@ -733,7 +733,7 @@
         '<span class="ico">💵</span><span class="txt">Pagado</span></button>' +
     '</div>';
     out += '</div>';
-    out += '<button class="btn btn-primary btn-small" style="width:100%;" data-action="addItemLine">+ Agregar a la venta</button>';
+    out += '<button class="btn btn-primary btn-small" style="width:100%;margin-top:14px;" data-action="addItemLine">+ Agregar a la venta</button>';
     out += '</div>';
 
     out += '<div class="card">';
@@ -993,6 +993,7 @@
       weekKeys.forEach(function(wk){
         out += '<div class="debt-week-row"><span>'+weekLabel(wk).replace('Semana del ','')+'</span><b>'+money(d.weeks[wk])+'</b></div>';
       });
+      out += '<button class="btn btn-primary btn-small" style="width:100%;margin-top:12px;" data-action="markClientPaid" data-name="'+esc(name)+'">✔️ Marcar todo como pagado</button>';
       out += '</div>';
       out += '</div>';
     });
@@ -1225,6 +1226,21 @@
     render();
   }
 
+  function markClientPaid(name){
+    if(!confirm('¿Marcar como pagado TODO lo pendiente de "'+name+'"? Esto actualizará cada venta con saldo, y no se puede deshacer en un solo paso.')) return;
+    var count = 0;
+    state.data.sales.forEach(function(s){
+      if(s.client !== name) return;
+      s.items.forEach(function(it){
+        if(!it.pagado){ it.pagado = true; count++; }
+      });
+    });
+    if(count===0){ toast('No había nada pendiente que marcar'); return; }
+    saveData();
+    toast(name+': todo marcado como pagado ✓');
+    render();
+  }
+
   function runImport(){
     var raw = state.importText || '';
     var arr;
@@ -1329,6 +1345,7 @@
       case 'addClientQuick': addClientQuick(); break;
       case 'renameClient': renameClient(el.getAttribute('data-name')); break;
       case 'deleteClient': deleteClient(el.getAttribute('data-name')); break;
+      case 'markClientPaid': markClientPaid(el.getAttribute('data-name')); break;
       case 'toggleImport': state.showImport = !state.showImport; render(); break;
       case 'runImport': runImport(); break;
       case 'clearImport': state.importText = ''; render(); break;
